@@ -13,6 +13,9 @@ dependencies = [
     "morphling @ git+https://github.com/netsys-edinburgh/morphling@wasp-api-v1",
     "networkx>=3.0",
     "numpy>=1.24",
+    "transformers>=4.40",
+    "scipy>=1.10",
+    "tqdm>=4.60",
 ]
 
 [project.optional-dependencies]
