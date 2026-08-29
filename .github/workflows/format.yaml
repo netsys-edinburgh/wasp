@@ -1,0 +1,45 @@
+name: Formatting
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      '**'
+  merge_group:
+    branches: [ main ]
+  schedule:
+    - cron: "0 0 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  # formatting and basic install on cpu-only machine
+  unit-tests:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: environment
+        run: |
+          which python
+          python --version
+
+      - name: Install dependencies
+        run: |
+          # Lint deps live in requirements-lint.txt (separated from
+          # requirements.txt so the main install doesn't drag in formatting
+          # toolchains). pip install .[dev] caused out-of-space errors with
+          # torch 2.1.0+, so we install lint deps directly.
+          pip install -r requirements-lint.txt
+
+      - name: Formatting checks
+        run: |
+          pip show pre-commit clang-format
+          pre-commit run --all-files

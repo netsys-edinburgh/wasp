@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wasp"
+description = "Wasp: coordinator-driven runtime for exact synchronous edge foundation-model training"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dynamic = ["version"]
+dependencies = [
+    "morphling @ git+https://github.com/netsys-edinburgh/morphling@wasp-api-v1",
+    "networkx>=3.0",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+solver = ["gurobipy>=11.0"]
+plot = ["matplotlib>=3.7", "pandas>=2.0"]
+dev = ["pytest>=8.0", "ruff>=0.6", "pyflakes>=3.2"]
+
+[project.scripts]
+wasp = "wasp.cli.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/netsys-edinburgh/wasp"
+Paper = "https://github.com/netsys-edinburgh/wasp/blob/main/docs/paper.md"
+
+[tool.setuptools_scm]
+fallback_version = "0.0.1"
+
+[tool.setuptools.packages.find]
+include = ["wasp*"]
+
+[tool.ruff]
+line-length = 80
