@@ -72,8 +72,8 @@ def _spawned_worker(rank: int, args: argparse.Namespace) -> None:
     worker_boundary(rank, args)
 
 
-def main() -> int:
-    args = _parser().parse_args()
+def main(argv: list[str] | None = None) -> int:
+    args = _parser().parse_args(argv)
     if args.worker:
         rank = int(os.environ["RANK"])
         worker_boundary(rank, args)
