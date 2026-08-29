@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use Wasp in your research, please cite the paper below."
+title: Wasp
+abstract: >-
+  Wasp is a coordinator-driven runtime for exact synchronous foundation-model
+  training over decentralized edge resources. It decomposes GEMM-dominated
+  training into row/column sub-GEMM shards and makes each shard a first-class
+  runtime object with explicit placement, transport-commit, cache, and recovery
+  state. Wasp builds on the Morphling emulator (EdgeSys '26).
+type: software
+license: Apache-2.0
+repository-code: "https://github.com/netsys-edinburgh/wasp"
+authors:
+  - family-names: Xue
+    given-names: Leyang
+    affiliation: The University of Edinburgh
+  - family-names: Xia
+    given-names: Yufeng
+    affiliation: The University of Edinburgh
+  - family-names: Lee
+    given-names: Myungjin
+    affiliation: Cisco Research
+  - family-names: Marina
+    given-names: Mahesh K.
+    affiliation: The University of Edinburgh
