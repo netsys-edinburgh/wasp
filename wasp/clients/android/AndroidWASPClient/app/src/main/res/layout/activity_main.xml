@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <!-- Progress bar for loading GPU/CPU runners -->
+    <TextView
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loading CPU and GPU Runners..."
+        android:textSize="18sp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="20dp"/>
+
+    <!-- Input for server IP -->
+    <EditText
+        android:id="@+id/ipEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Server IP"
+        android:visibility="gone"
+        android:layout_marginTop="20dp"/>
+
+    <!-- Input for server port -->
+    <EditText
+        android:id="@+id/portEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Port"
+        android:inputType="number"
+        android:visibility="gone"
+        android:layout_marginTop="10dp"/>
+
+    <!-- Button to start training (connect to server) -->
+    <Button
+        android:id="@+id/connectButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Connect and Start Training"
+        android:visibility="gone"
+        android:layout_marginTop="20dp"/>
+
+    <!-- Static UI text while waiting for TCP data -->
+    <TextView
+        android:id="@+id/waitingTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Training..."
+        android:textSize="18sp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="20dp"/>
+</LinearLayout>

@@ -1,0 +1,156 @@
+syntax = "proto2";
+
+package morphling.global_api;
+
+import "morphling.proto";
+
+//==================================================================================================
+enum MessageType {
+    BEGINNING_ID = 100;
+
+    // ----- MatrixPartition 接口 ----------------------------------------------------------------------------
+    COMPUTE_GEMM_REQUEST = 101; // 计算矩阵乘法
+    COMPUTE_GEMM_RESPONSE = 102;
+    COMPUTE_GEMM_DATA = 103;
+
+    // ----- DeviceRegister ----------------------------------------------------------------------------
+    DEVICE_REGISTER_REQUEST = 105;
+    DEVICE_PROFILE_DATA = 106;
+
+    // ----- DeviceMeasurement probes (#45 step 3 / #55) -------------------
+    // Server -> device: round-trip latency probe (echoes payload bytes).
+    PROBE_LATENCY_REQUEST = 107;
+    PROBE_LATENCY_RESPONSE = 108;
+    // Server -> device: bandwidth probe (echoes a large buffer).
+    PROBE_BANDWIDTH_REQUEST = 109;
+    PROBE_BANDWIDTH_RESPONSE = 110;
+    // Server -> device: seeded challenge GEMM (verifiable FLOPS measurement).
+    PROBE_FLOPS_REQUEST = 111;
+    PROBE_FLOPS_RESPONSE = 112;
+
+    ENDING_ID = 200;
+};
+
+//======================================================================================================================
+extend morphling.Body {
+    // ----- MatrixPartition 接口 -----------------------------------------------------------------------------------------------
+    optional ComputeGemmRequest compute_gemm_request = 101; // 计算矩阵乘法
+    optional ComputeGemmResponse compute_gemm_response = 102;
+    optional ComputeGemmData compute_gemm_data = 103;
+
+    // ----- DeviceRegister ----------------------------------------------------------------------------
+    optional DeviceRegisterRequest device_resgister_request = 105;
+    optional DeviceProfileData device_profile_data = 106;
+
+    // ----- DeviceMeasurement probes (#55) ----------------------------------
+    optional ProbeLatencyRequest  probe_latency_request  = 107;
+    optional ProbeLatencyResponse probe_latency_response = 108;
+    optional ProbeBandwidthRequest  probe_bandwidth_request  = 109;
+    optional ProbeBandwidthResponse probe_bandwidth_response = 110;
+    optional ProbeFlopsRequest  probe_flops_request  = 111;
+    optional ProbeFlopsResponse probe_flops_response = 112;
+};
+
+message DeviceRegisterRequest {
+    // Empty request from server to client asking for registration
+}
+
+message DeviceProfileData {
+    required uint64 uuid = 1;
+    required uint64 flops = 2;
+    required uint64 memory = 3;
+    required uint64 ul_bw = 4;
+    required uint64 dl_bw = 5;
+    required uint64 ul_lat = 6;
+    required uint64 dl_lat = 7;
+
+    // Server-measured fields (#45). Optional so legacy clients/servers
+    // round-trip without breakage; unset == "not measured".
+    optional uint64 measured_flops = 8;
+    optional bool   measured_flops_verified = 9;
+    optional uint64 measured_lat_ns = 10;
+    optional uint64 measured_ul_bw_bps = 11;
+    optional uint64 measured_dl_bw_bps = 12;
+}
+
+message ComputeGemmData {
+    required uint64 version = 1;
+    required int64 row = 2;
+    required int64 col = 3;
+    required int64 pivot = 4;
+    required int64 h_dim = 5;
+    required int64 dev_id = 6;
+    required int64 oid = 7;
+    required uint64 timestamp = 8;
+    required int64 gemm_id = 9;
+
+    repeated Payload matrices = 10;
+};
+
+message ComputeGemmRequest {
+    required uint64 version = 1;
+    required int64 row = 2;
+    required int64 col = 3;
+    required int64 pivot = 4;
+    required int64 h_dim = 5;
+    required int64 dev_id = 6;
+    required int64 oid = 7;
+    required uint64 timestamp = 8;
+
+    optional Payload matrix_a = 10; // 矩阵A
+    optional Payload matrix_b = 20; // 矩阵B
+};
+
+message ComputeGemmResponse {
+    required uint64 version = 1;
+    required int64 row = 2;
+    required int64 col = 3;
+    required int64 pivot = 4;
+    required int64 h_dim = 5;
+    required int64 dev_id = 6;
+    required int64 oid = 7;
+    required uint64 timestamp = 8;
+
+    required Payload matrix_c = 10; // 矩阵C
+};
+
+// ============================================================================
+// DeviceMeasurement probes (#55) -- server-driven, request/response pairs.
+// All payloads are opaque bytes so the on-wire format mirrors the C++
+// probe traffic exactly (zero copy-by-value through the libevent buffer).
+// ============================================================================
+
+message ProbeLatencyRequest {
+    required uint64 probe_id = 1;   // server-assigned, echoed back
+    required bytes payload = 2;     // small (e.g. 64 B) round-trip blob
+}
+
+message ProbeLatencyResponse {
+    required uint64 probe_id = 1;
+    required bytes payload = 2;     // device returns the same bytes
+}
+
+message ProbeBandwidthRequest {
+    required uint64 probe_id = 1;
+    required bytes payload = 2;     // e.g. 4 MiB pattern, device echoes
+}
+
+message ProbeBandwidthResponse {
+    required uint64 probe_id = 1;
+    required bytes payload = 2;
+}
+
+message ProbeFlopsRequest {
+    required uint64 probe_id = 1;
+    required uint64 seed = 2;       // RNG seed; server recomputes A, B
+    required uint32 m = 3;
+    required uint32 n = 4;
+    required uint32 k = 5;
+    required bytes matrix_a = 10;   // m*k float32, little-endian
+    required bytes matrix_b = 11;   // k*n float32, little-endian
+}
+
+message ProbeFlopsResponse {
+    required uint64 probe_id = 1;
+    required bytes matrix_c = 10;   // m*n float32, device-computed
+}

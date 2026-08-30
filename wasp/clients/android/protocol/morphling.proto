@@ -1,0 +1,143 @@
+syntax = "proto2";
+
+package morphling;
+
+// 所有协议的总名字空间
+message UMessage {
+    // 协议头
+    required Head head = 1;
+
+    // 协议体
+    required Body body = 2;
+};
+
+message Head {
+    // 版本号
+    required uint32 version = 1;
+    // 协议校验标记
+    required uint32 magic_flag = 2 [default = 0x12340987];
+    // 随机数
+    required uint32 random_num = 3;
+    // 流水号, 应答包需要与请求报具有相同的flow_no，用于异步请求
+    required uint32 flow_no = 4;
+    // 会话唯一标识，发起调用处指定，后续不能变化
+    required string session_no = 5;
+    // 协议类型
+    required int32 message_type = 6;
+
+    // 用于转发服务使用
+    optional string target_id = 10;                 // 目标ID，优先使用
+    optional string target_ip = 30;                 // 目标IP
+    optional uint32 target_port = 40;               // 目标端口
+};
+
+
+message Body {
+    optional SimpleResponse simple_response = 1;
+    optional HeartBeatRequest heart_beat_request = 3;
+    optional HeartBeatResponse heart_beat_response = 5;
+    extensions 100 to max;
+};
+
+enum MessageType {
+    SIMPLE_RESPONSE = 10;
+    HEART_BEAT_REQUEST = 12;
+    HEART_BEAT_RESPONSE = 13;
+};
+
+// 公共的一些数据结构
+message IpPortPair {
+    required uint32 ip = 1;
+    required uint32 port = 2;
+};
+
+message Payload {
+    required int64 offset = 1;
+    required int64 size = 2;
+};
+
+// 通用的返回码
+message ResponseCode {
+    required int32 retcode = 1;                 // 返回值
+    optional string error_message = 2;          // 当返回值不为0时，包含错误信息
+};
+
+// IP地址信息
+message IpAddress {
+    required string ip = 1;                     // IP地址
+    required uint32 type = 2;                   // IP类型，可能是内网、BGP、电信、联通、移动、东方有线、电信通等等
+};
+
+// 简单的返回包
+message SimpleResponse {
+    required ResponseCode rc = 1;
+};
+
+// 心跳请求，有效载荷由通信的双方协定
+message HeartBeatRequest {
+    repeated bytes payload = 1;
+};
+
+// 心跳应答，有效载荷由通信的双方协定
+message HeartBeatResponse {
+    required ResponseCode rc = 1;
+    repeated bytes payload = 2;
+};
+
+message Empty {}
+
+message Response {
+    required string message = 1;
+    required uint32 code = 2;
+}
+
+message ShmInfo {
+    required string name = 1;
+    required uint64 size = 2;
+}
+
+message ScheduleGemmRequest {
+    required string task_id = 1;
+    required uint32 device_id = 2;
+    required uint32 sync_stage = 3;
+    repeated ShmInfo a_info = 10;
+    repeated ShmInfo b_info = 11;
+    repeated ShmInfo c_info = 12;
+    required ShmInfo task_info = 13;
+}
+
+message ScheduleGemmResponse {
+    required Response rsp = 1;
+    required uint64 virtual_ts = 10;
+}
+
+message ModelParamRequest {
+}
+
+message ParamInfo {
+    required string param_name = 1;
+    required string shm_name = 2;
+    required uint64 size = 3;
+}
+
+message ModelParamResponse {
+    required Response rsp = 1;
+    repeated ParamInfo param_info = 2;
+}
+
+
+// Messages used in MQ
+
+message MatMulRequestMessage {
+    required uint32 row = 1;
+    required uint32 col = 2;
+    repeated uint32 ld = 3;
+    repeated bytes mat = 10;
+}
+
+message MatMulResponseMessage {
+    required uint32 row = 1;
+    required uint32 col = 2;
+    repeated uint32 ld = 3;
+    required bytes mat = 10;
+}

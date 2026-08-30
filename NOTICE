@@ -3,3 +3,7 @@ Copyright 2026 The Wasp Authors
 
 This product builds on Morphling (Apache-2.0),
 https://github.com/netsys-edinburgh/morphling.
+
+The Android real-device client under wasp/clients/android/ is vendored from
+Training-On-The-Edge (https://github.com/ismaeelbashir03/Training-On-The-Edge),
+Copyright (c) Ismaeel Bashir. See wasp/clients/android/README.md for licensing.

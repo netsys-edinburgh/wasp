@@ -1,0 +1,70 @@
+syntax = "proto2";
+
+package morphling.global_api;
+
+import "morphling.proto";
+
+//==================================================================================================
+enum MessageType {
+    BEGINNING_ID = 100;
+
+    // ----- Unknown --------------------------------------------------------------------------------------
+    UNKNOWN = 101;
+
+    // ----- MatrixPartition 接口 ----------------------------------------------------------------------------
+    COMPUTE_GEMM_REQUEST = 102; // 计算矩阵乘法
+    COMPUTE_GEMM_RESPONSE = 103;
+
+    // ----- DeviceRegister ----------------------------------------------------------------------------
+    DEVICE_REGISTER = 104;
+
+    ENDING_ID = 200;
+};
+
+//======================================================================================================================
+extend morphling.Body {
+    // ----- MatrixPartition 接口 -----------------------------------------------------------------------------------------------
+    optional ComputeGemmRequest compute_gemm_request = 101; // 计算矩阵乘法
+    optional ComputeGemmResponse compute_gemm_response = 102;
+
+    // ----- DeviceRegister ----------------------------------------------------------------------------
+    optional DeviceRegisterRequest register_device = 103;
+};
+
+message DeviceRegisterRequest {
+    required uint64 uuid = 1;
+    required uint64 flops = 2;
+    required uint64 memory = 3;
+    required uint64 ul_bw = 4;
+    required uint64 dl_bw = 5;
+    required uint64 ul_lat = 6;
+    required uint64 dl_lat = 7;
+    required uint64 backend = 8;
+}
+
+message ComputeGemmRequest {
+    required uint64 version = 1;
+    required int64 row = 2;
+    required int64 col = 3;
+    required int64 pivot = 4;
+    required int64 h_dim = 5;
+    required int64 dev_id = 6;
+    required int64 oid = 7;
+    required uint64 timestamp = 8;
+
+    optional Payload matrix_a = 10; // 矩阵A
+    optional Payload matrix_b = 20; // 矩阵B
+};
+
+message ComputeGemmResponse {
+    required uint64 version = 1;
+    required int64 row = 2;
+    required int64 col = 3;
+    required int64 pivot = 4;
+    required int64 h_dim = 5;
+    required int64 dev_id = 6;
+    required int64 oid = 7;
+    required uint64 timestamp = 8;
+
+    required Payload matrix_c = 10; // 矩阵C
+};
