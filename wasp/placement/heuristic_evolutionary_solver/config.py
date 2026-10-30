@@ -47,7 +47,7 @@ delay_bandwidth_dict = {
     "Sydney-Ireland": (254, 0.344),
     "London-Frankfurt": (14, 1.14),
     "London-Ireland": (12, 1.09),
-    "Frankfurt-Ireland": (24, 1.08)
+    "Frankfurt-Ireland": (24, 1.08),
 }
 
 nodes = 64
@@ -61,13 +61,15 @@ def simulate_0_datacenter(nodes=64):
 
     delay = np.zeros((nodes, nodes))
     bandwidth = np.ones((nodes, nodes)) * 3.125
-    gpu_per_instances = min(nodes//2, 8)
+    gpu_per_instances = min(nodes // 2, 8)
     instances = nodes // gpu_per_instances
     bandwidth_blocks = [
-        np.ones((gpu_per_instances, gpu_per_instances)) * 96.875 for _ in range(instances)]
+        np.ones((gpu_per_instances, gpu_per_instances)) * 96.875
+        for _ in range(instances)
+    ]
     bandwidth = bandwidth + scipy.linalg.block_diag(*bandwidth_blocks)
-    print('delay(ms):', delay)
-    print('bandwidth(Gbps):', bandwidth)
+    print("delay(ms):", delay)
+    print("bandwidth(Gbps):", bandwidth)
     return delay, bandwidth, regions
 
 
@@ -77,24 +79,29 @@ def simulate_1_datacenter_spot_gpu(nodes=64, group=(8, 4)):
     gpu_per_instances = group[1]
     regions = []
     for i in range(nodes):
-        if i//gpu_per_instances < instance_num:
+        if i // gpu_per_instances < instance_num:
             regions.append("spot_instance_" + str(i // gpu_per_instances))
         else:
             regions.append("standalone")
 
     delay = np.zeros((nodes, nodes))
     bandwidth = np.ones((nodes, nodes)) * 1.25
-    bandwidth_blocks = [np.ones((gpu_per_instances, gpu_per_instances)) * (98.75 if i < instance_num else 0)
-                        for i in range(nodes//gpu_per_instances)]
+    bandwidth_blocks = [
+        np.ones((gpu_per_instances, gpu_per_instances))
+        * (98.75 if i < instance_num else 0)
+        for i in range(nodes // gpu_per_instances)
+    ]
     bandwidth = bandwidth + scipy.linalg.block_diag(*bandwidth_blocks)
-    print('delay(ms):', delay)
-    print('bandwidth(Gbps):', bandwidth)
+    print("delay(ms):", delay)
+    print("bandwidth(Gbps):", bandwidth)
     return delay, bandwidth, regions
 
 
 def simulate_2_multi_universities(nodes=64):
-    print("Simulate case 2: multi universities. 0~31 in Ohio, 32~63 in Virginia.")
-    split = nodes//2
+    print(
+        "Simulate case 2: multi universities. 0~31 in Ohio, 32~63 in Virginia."
+    )
+    split = nodes // 2
     regions = []
     for i in range(nodes):
         if i < split:
@@ -109,26 +116,28 @@ def simulate_2_multi_universities(nodes=64):
             if not ((i < split and j < split) or (i >= split and j >= split)):
                 delay[i][j] = 11
                 bandwidth[i][j] = 1.12
-    print('delay:', delay)
-    print('bandwidth:', bandwidth)
+    print("delay:", delay)
+    print("bandwidth:", bandwidth)
     return delay, bandwidth, regions
 
 
 # Assume within region is 2 GB, 5 ms.
 def simulate_3_regional_geo_distributed(nodes=64):
-    print("Simulate case 3: regional geo distributed: 0~15 in Virgina, 16~31 in Oregon, 32~47 in California, 48~63 in Ohio")
+    print(
+        "Simulate case 3: regional geo distributed: 0~15 in Virgina, 16~31 in Oregon, 32~47 in California, 48~63 in Ohio"
+    )
 
     def in_virgina(index: int):
-        return index < nodes//4
+        return index < nodes // 4
 
     def in_oregon(index: int):
-        return nodes//4 <= index < nodes//2
+        return nodes // 4 <= index < nodes // 2
 
     def in_california(index: int):
-        return nodes//2 <= index < nodes*3//4
+        return nodes // 2 <= index < nodes * 3 // 4
 
     def in_ohio(index: int):
-        return index >= nodes*3//4
+        return index >= nodes * 3 // 4
 
     regions = []
     for i in range(nodes):
@@ -175,8 +184,8 @@ def simulate_3_regional_geo_distributed(nodes=64):
                 delay[j][i] = 52
                 bandwidth[i][j] = 1.02
                 bandwidth[j][i] = 1.02
-    print('delay(ms):', delay)
-    print('bandwidth(Gbps):', bandwidth)
+    print("delay(ms):", delay)
+    print("bandwidth(Gbps):", bandwidth)
     return delay, bandwidth, regions
 
 
@@ -184,8 +193,16 @@ def simulate_3_regional_geo_distributed(nodes=64):
 def simulate_4_worldwide_geo_distributed(nodes=64):
     print("Simulate case 4: worldwide geo distributed")
     regions = []
-    cities = ["Oregon", "Virginia", "Ohio", "Tokyo",
-              "Seoul", "London", "Frankfurt", "Ireland"]
+    cities = [
+        "Oregon",
+        "Virginia",
+        "Ohio",
+        "Tokyo",
+        "Seoul",
+        "London",
+        "Frankfurt",
+        "Ireland",
+    ]
     for i in range(nodes):
         regions.append(cities[i // 8])
     # cities = ["Oregon", "Virginia", "Ohio", "Tokyo", "Seoul",
@@ -199,10 +216,10 @@ def simulate_4_worldwide_geo_distributed(nodes=64):
         if region1 == region2:
             return 5, 2
         else:
-            if region1+'-'+region2 in delay_bandwidth_dict:
-                return delay_bandwidth_dict[region1+'-'+region2]
-            elif region2+'-'+region1 in delay_bandwidth_dict:
-                return delay_bandwidth_dict[region2+'-'+region1]
+            if region1 + "-" + region2 in delay_bandwidth_dict:
+                return delay_bandwidth_dict[region1 + "-" + region2]
+            elif region2 + "-" + region1 in delay_bandwidth_dict:
+                return delay_bandwidth_dict[region2 + "-" + region1]
             else:
                 print(region1, region2)
                 assert False
@@ -217,8 +234,8 @@ def simulate_4_worldwide_geo_distributed(nodes=64):
             delay[j][i] = d_val
             bandwidth[i][j] = b_val
             bandwidth[j][i] = b_val
-    print('delay(ms):', delay)
-    print('bandwidth(Gbps):', bandwidth)
+    print("delay(ms):", delay)
+    print("bandwidth(Gbps):", bandwidth)
     return delay, bandwidth, regions
 
 
@@ -226,8 +243,8 @@ def simulate_5_homogeneous_tc(nodes=64, delay=50, bandwidth=1):
     print("Simulate case 5: homogeneous traffic control")
     delay = np.ones((nodes, nodes)) * delay
     bandwidth = np.ones((nodes, nodes)) * bandwidth
-    print('delay(ms):', delay)
-    print('bandwidth(Gbps):', bandwidth)
+    print("delay(ms):", delay)
+    print("bandwidth(Gbps):", bandwidth)
     return delay, bandwidth, None
 
 
@@ -235,12 +252,11 @@ def simulate_6_debug(nodes=8):
     print("Simulate case 6: debug PP, nodes 8")
     delay = np.ones((nodes, nodes))
     bandwidth = np.ones((nodes, nodes)) * 5
-    for i in range(nodes-1):
-        delay[i][i+1] = 5*(i+1)
-        delay[i+1][i] = 5*(i+1)
-        bandwidth[i][i+1] = (10-i)//2
-        bandwidth[i+1][i] = (10 - i) // 2
-    print('delay(ms):', delay)
-    print('bandwidth(Gbps):', bandwidth)
+    for i in range(nodes - 1):
+        delay[i][i + 1] = 5 * (i + 1)
+        delay[i + 1][i] = 5 * (i + 1)
+        bandwidth[i][i + 1] = (10 - i) // 2
+        bandwidth[i + 1][i] = (10 - i) // 2
+    print("delay(ms):", delay)
+    print("bandwidth(Gbps):", bandwidth)
     return delay, bandwidth, None
-

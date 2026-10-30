@@ -17,9 +17,7 @@ def test_backend_defaults_to_heuristic_without_gurobi(monkeypatch):
 
 
 def test_backend_respects_explicit_choice(monkeypatch):
-    monkeypatch.setattr(
-        "wasp.placement.backend.gurobi_available", lambda: True
-    )
+    monkeypatch.setattr("wasp.placement.backend.gurobi_available", lambda: True)
     assert select_backend("heuristic") == "heuristic"
     assert select_backend("gurobi") == "gurobi"
 

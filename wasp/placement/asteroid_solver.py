@@ -37,10 +37,14 @@ def _inter_stage_link(group_a, group_b, delay_ms, bandwidth_gbps):
     return min_bw, max_delay
 
 
-def _device_stage_exec_s(n_layers, local_bs, S, d_model, d_ffn, device_flops, compute_layer_flops_fn):
+def _device_stage_exec_s(
+    n_layers, local_bs, S, d_model, d_ffn, device_flops, compute_layer_flops_fn
+):
     if local_bs <= 0 or n_layers <= 0:
         return 0.0
-    layer_s = compute_layer_flops_fn(local_bs, S, d_model, d_ffn) / max(float(device_flops) * TB, 1e-12)
+    layer_s = compute_layer_flops_fn(local_bs, S, d_model, d_ffn) / max(
+        float(device_flops) * TB, 1e-12
+    )
     return float(layer_s * n_layers)
 
 
@@ -166,7 +170,9 @@ def solve_Asteroid(
     ul_lat = _to_array(UL_LATENCY, n)
     dl_lat = _to_array(DL_LATENCY, n)
 
-    delay_ms, bandwidth_gbps = build_peer_matrices(n, ul_bw, dl_bw, ul_lat, dl_lat)
+    delay_ms, bandwidth_gbps = build_peer_matrices(
+        n, ul_bw, dl_bw, ul_lat, dl_lat
+    )
 
     if num_microbatches is None:
         num_microbatches = max(1, int(B) // 4)
@@ -174,7 +180,9 @@ def solve_Asteroid(
     micro_bs = int(max(1, int(np.ceil(float(B) / float(num_microbatches)))))
 
     layer_size_gb = float(get_layer_size_gb(model))
-    act_size_per_sample_gb = float(compute_activation_size_gb(1, int(S), d_model))
+    act_size_per_sample_gb = float(
+        compute_activation_size_gb(1, int(S), d_model)
+    )
 
     device_ids = list(range(n))
     max_stages = min(8, n, num_layers)
@@ -182,7 +190,9 @@ def solve_Asteroid(
     best_total_cost = inf
 
     for num_stages in range(1, max_stages + 1):
-        latency = np.full((num_layers + 1, n + 1, num_stages + 1), inf, dtype=np.float64)
+        latency = np.full(
+            (num_layers + 1, n + 1, num_stages + 1), inf, dtype=np.float64
+        )
         config: list[list[list[Any]]] = [
             [[None for _ in range(num_stages + 1)] for _ in range(n + 1)]
             for _ in range(num_layers + 1)
@@ -213,9 +223,13 @@ def solve_Asteroid(
                 if alloc is None:
                     continue
 
-                grad_size_gb = compute_gradient_size_gb(layer_size_gb, end - start, len(group))
+                grad_size_gb = compute_gradient_size_gb(
+                    layer_size_gb, end - start, len(group)
+                )
                 min_bw = _group_min_bw_gbps(group, bandwidth_gbps)
-                allreduce = ring_allreduce_cost_s(grad_size_gb, min_bw, len(group))
+                allreduce = ring_allreduce_cost_s(
+                    grad_size_gb, min_bw, len(group)
+                )
                 stage_cost = stage_exec + allreduce
 
                 latency[layers_tail, devices_tail, 1] = stage_cost
@@ -229,12 +243,22 @@ def solve_Asteroid(
             for layers_tail in range(stages_tail, num_layers + 1):
                 for devices_tail in range(stages_tail, n + 1):
                     for prev_layers_tail in range(stages_tail - 1, layers_tail):
-                        for prev_devices_tail in range(stages_tail - 1, devices_tail):
-                            prev_latency = float(latency[prev_layers_tail, prev_devices_tail, stages_tail - 1])
+                        for prev_devices_tail in range(
+                            stages_tail - 1, devices_tail
+                        ):
+                            prev_latency = float(
+                                latency[
+                                    prev_layers_tail,
+                                    prev_devices_tail,
+                                    stages_tail - 1,
+                                ]
+                            )
                             if not np.isfinite(prev_latency):
                                 continue
 
-                            group = device_ids[n - devices_tail : n - prev_devices_tail]
+                            group = device_ids[
+                                n - devices_tail : n - prev_devices_tail
+                            ]
                             if not group:
                                 continue
 
@@ -262,26 +286,48 @@ def solve_Asteroid(
                             if alloc is None:
                                 continue
 
-                            prev_cfg = config[prev_layers_tail][prev_devices_tail][stages_tail - 1]
+                            prev_cfg = config[prev_layers_tail][
+                                prev_devices_tail
+                            ][stages_tail - 1]
                             if prev_cfg is None:
                                 continue
                             next_group = prev_cfg["groups"][0]
 
-                            data_size_gb = compute_activation_size_gb(int(sum(alloc.values())), int(S), d_model)
-                            link_bw, link_delay = _inter_stage_link(group, next_group, delay_ms, bandwidth_gbps)
-                            inter_stage = p2p_transfer_cost_s(data_size_gb, link_bw, link_delay)
+                            data_size_gb = compute_activation_size_gb(
+                                int(sum(alloc.values())), int(S), d_model
+                            )
+                            link_bw, link_delay = _inter_stage_link(
+                                group, next_group, delay_ms, bandwidth_gbps
+                            )
+                            inter_stage = p2p_transfer_cost_s(
+                                data_size_gb, link_bw, link_delay
+                            )
 
-                            grad_size_gb = compute_gradient_size_gb(layer_size_gb, end - start, len(group))
+                            grad_size_gb = compute_gradient_size_gb(
+                                layer_size_gb, end - start, len(group)
+                            )
                             min_bw = _group_min_bw_gbps(group, bandwidth_gbps)
-                            allreduce = ring_allreduce_cost_s(grad_size_gb, min_bw, len(group))
+                            allreduce = ring_allreduce_cost_s(
+                                grad_size_gb, min_bw, len(group)
+                            )
 
                             stage_cost = stage_exec + inter_stage + allreduce
                             total = max(prev_latency, stage_cost)
 
-                            if total < latency[layers_tail, devices_tail, stages_tail]:
-                                latency[layers_tail, devices_tail, stages_tail] = total
-                                config[layers_tail][devices_tail][stages_tail] = {
-                                    "ranges": [(start, end)] + prev_cfg["ranges"],
+                            if (
+                                total
+                                < latency[
+                                    layers_tail, devices_tail, stages_tail
+                                ]
+                            ):
+                                latency[
+                                    layers_tail, devices_tail, stages_tail
+                                ] = total
+                                config[layers_tail][devices_tail][
+                                    stages_tail
+                                ] = {
+                                    "ranges": [(start, end)]
+                                    + prev_cfg["ranges"],
                                     "groups": [group] + prev_cfg["groups"],
                                     "allocs": [alloc] + prev_cfg["allocs"],
                                 }

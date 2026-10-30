@@ -89,8 +89,12 @@ def solve_SHTP(
     m.setParam("MIPGap", 0.05)  # 5% gap, no need to be very precise
 
     # matrix multiplication B x S x H  with H x D
-    beta = m.addMVar(num_devices, vtype=GRB.INTEGER, lb=0, ub=out_dim, name="beta")
-    alpha = m.addMVar(num_devices, vtype=GRB.INTEGER, lb=0, ub=in_dim, name="alpha")
+    beta = m.addMVar(
+        num_devices, vtype=GRB.INTEGER, lb=0, ub=out_dim, name="beta"
+    )
+    alpha = m.addMVar(
+        num_devices, vtype=GRB.INTEGER, lb=0, ub=in_dim, name="alpha"
+    )
 
     ul_const_list = np.zeros(num_devices)
     dl_const_list = np.zeros(num_devices)

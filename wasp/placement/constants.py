@@ -12,6 +12,7 @@ BYTE_SIZE = 2
 
 M = 1e15
 
+
 def get_divisors(n):
     divisors = []
     for i in range(2, n + 1):

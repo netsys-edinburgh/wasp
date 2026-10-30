@@ -32,7 +32,11 @@ def derive_layout(manifest: dict[str, Any]) -> dict[str, Any]:
     ents = manifest.get("entries", [])
     meta = manifest.get("metadata", {})
     nd = int(meta.get("num_devices", 0)) or len(
-        {int(e.get("device_id", -1)) for e in ents if int(e.get("device_id", -1)) >= 0}
+        {
+            int(e.get("device_id", -1))
+            for e in ents
+            if int(e.get("device_id", -1)) >= 0
+        }
     )
     ptypes = {str(e.get("parallelism_type", e.get("type", ""))) for e in ents}
 
@@ -83,7 +87,9 @@ def derive_layout(manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _manifest_path(root: Path, cfg: dict[str, str], baseline: str) -> Path | None:
+def _manifest_path(
+    root: Path, cfg: dict[str, str], baseline: str
+) -> Path | None:
     for pat in cfg["patterns"]:
         p = root / pat.format(b=baseline)
         if p.exists():
@@ -93,17 +99,27 @@ def _manifest_path(root: Path, cfg: dict[str, str], baseline: str) -> Path | Non
 
 def build_configs(root: Path) -> dict[str, dict[str, str]]:
     configs: dict[str, dict[str, str]] = {}
-    for n, pt in [(64, "000_64"), (128, "001_128"), (256, "002_256"), (512, "003_512"), (1024, "004_1024")]:
+    for n, pt in [
+        (64, "000_64"),
+        (128, "001_128"),
+        (256, "002_256"),
+        (512, "003_512"),
+        (1024, "004_1024"),
+    ]:
         configs[f"opt-13b/{n}"] = {
             "patterns": [
                 f"results/vtime_scaling/num_devices/points/{pt}/planning/manifests/{{b}}_manifest.json"
             ]
         }
     configs["llama2-13b"] = {
-        "patterns": ["results/vtime_models/llama2-13b/{b}_results/manifests/{b}_manifest.json"]
+        "patterns": [
+            "results/vtime_models/llama2-13b/{b}_results/manifests/{b}_manifest.json"
+        ]
     }
     configs["llama2-70b"] = {
-        "patterns": ["results/vtime_models/llama2-70b/{b}_results/manifests/{b}_manifest.json"]
+        "patterns": [
+            "results/vtime_models/llama2-70b/{b}_results/manifests/{b}_manifest.json"
+        ]
     }
     return configs
 
@@ -111,12 +127,19 @@ def build_configs(root: Path) -> dict[str, dict[str, str]]:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", type=str, default=".")
-    ap.add_argument("--output", type=str, default="results/analytical_scaling/selected_layouts.json")
+    ap.add_argument(
+        "--output",
+        type=str,
+        default="results/analytical_scaling/selected_layouts.json",
+    )
     args = ap.parse_args()
     root = Path(args.root)
 
     configs = build_configs(root)
-    out: dict[str, Any] = {"description": "Selected planner layouts per (config, baseline), derived from dispatch manifests.", "configs": {}}
+    out: dict[str, Any] = {
+        "description": "Selected planner layouts per (config, baseline), derived from dispatch manifests.",
+        "configs": {},
+    }
     for cfg_name, cfg in configs.items():
         cfg_out: dict[str, Any] = {}
         for b in BASELINES:
@@ -132,7 +155,10 @@ def main() -> int:
     outp.write_text(json.dumps(out, indent=2))
     print(f"Wrote {outp}\n")
     for cfg_name, cfg_out in out["configs"].items():
-        row = "  ".join(f"{LABELS[b]}={v['summary']}({v['num_devices']}d)" for b, v in cfg_out.items())
+        row = "  ".join(
+            f"{LABELS[b]}={v['summary']}({v['num_devices']}d)"
+            for b, v in cfg_out.items()
+        )
         print(f"{cfg_name:16s}: {row}")
     return 0
 
