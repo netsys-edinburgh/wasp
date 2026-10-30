@@ -12,10 +12,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Sequence
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-BASE_PORT = 39100
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+if str(Path(__file__).resolve().parents[1]) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from wasp.scaling.coordinator_scaling_analysis import (
     RunMeasurement,
@@ -33,6 +31,10 @@ from wasp.scaling.coordinator_scaling_execution import (
     build_inner_command,
     run_command,
 )
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+BASE_PORT = 39100
 
 
 class PortAllocationError(ValueError):

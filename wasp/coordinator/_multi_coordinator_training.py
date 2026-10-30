@@ -9,7 +9,6 @@ import time
 import traceback
 from datetime import timedelta
 from pathlib import Path
-from typing import Final
 
 import torch.distributed as dist
 
@@ -20,8 +19,12 @@ from morphling.api import (
     start_metrics_collector,
     track_phase,
 )
-from wasp.coordinator._multi_coordinator_fleet import spawn_fleet as _spawn_fleet
-from wasp.coordinator._multi_coordinator_fleet import terminate_fleet as _terminate_fleet
+from wasp.coordinator._multi_coordinator_fleet import (
+    spawn_fleet as _spawn_fleet,
+)
+from wasp.coordinator._multi_coordinator_fleet import (
+    terminate_fleet as _terminate_fleet,
+)
 from wasp.coordinator._multi_coordinator_workload import run_workload
 from wasp.scaling.multi_coordinator_scaling_config import ScalingConfig
 from wasp.scaling.multi_coordinator_scaling_results import (
@@ -146,7 +149,10 @@ def run_coordinator(rank: int, args: argparse.Namespace) -> int:
                 timeout=timedelta(seconds=args.distributed_timeout_seconds),
             )
         group_initialized = True
-        from wasp.coordinator._runtime_common import start_backend, wait_for_connections
+        from wasp.coordinator._runtime_common import (
+            start_backend,
+            wait_for_connections,
+        )
 
         root = Path(__file__).resolve().parents[1]
         rank_config = _write_rank_config(

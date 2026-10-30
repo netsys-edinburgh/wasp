@@ -4,8 +4,12 @@ import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
 
-from wasp.placement.constants import *
-from wasp.placement.arguments import *
+from wasp.placement.constants import BYTE_SIZE, MB, TB
+from wasp.placement.arguments import (
+    get_batch_gemm_sizes,
+    get_gemm_shapes,
+    parse_args,
+)
 
 
 args = parse_args()
@@ -89,8 +93,12 @@ def solve_SHTP(
     m.setParam("MIPGap", 0.05)  # 5% gap, no need to be very precise
 
     # matrix multiplication B x S x H  with H x D
-    beta = m.addMVar(num_devices, vtype=GRB.INTEGER, lb=0, ub=out_dim, name="beta")
-    alpha = m.addMVar(num_devices, vtype=GRB.INTEGER, lb=0, ub=in_dim, name="alpha")
+    beta = m.addMVar(
+        num_devices, vtype=GRB.INTEGER, lb=0, ub=out_dim, name="beta"
+    )
+    alpha = m.addMVar(
+        num_devices, vtype=GRB.INTEGER, lb=0, ub=in_dim, name="alpha"
+    )
 
     ul_const_list = np.zeros(num_devices)
     dl_const_list = np.zeros(num_devices)
@@ -250,7 +258,7 @@ model_forward_cost = 0
 for cycle, cost in test_results.items():
     model_layer_cost += cost * multipliers[cycle]
     model_cal_cost += cal_results[cycle] * multipliers[cycle]
-    if not "bk" in cycle:
+    if "bk" not in cycle:
         model_forward_cost += cost * multipliers[cycle]
     print(f"{cycle=}, {cost=}, {multipliers[cycle]=}")
 # print(f"{model_forward_cost=}")

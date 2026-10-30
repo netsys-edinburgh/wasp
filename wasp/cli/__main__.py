@@ -33,10 +33,14 @@ def main(argv: list[str] | None = None) -> int:
         return int(
             run_main(
                 [
-                    "--coords", str(args.coords),
-                    "--devices_per_coord", str(args.devices_per_coord),
-                    "--steps", str(args.steps),
-                    "--model-name", args.model_name,
+                    "--coords",
+                    str(args.coords),
+                    "--devices_per_coord",
+                    str(args.devices_per_coord),
+                    "--steps",
+                    str(args.steps),
+                    "--model-name",
+                    args.model_name,
                     *(["--tiny"] if args.tiny else []),
                 ]
             )

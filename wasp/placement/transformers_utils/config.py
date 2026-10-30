@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from transformers import AutoConfig
 
 
@@ -12,18 +12,22 @@ class HFUnifiedConfig:
     hidden_size: int
     torch_dtype: str
     mlp_size: int
-    
+
     def __init__(self, model_name: str):
-        self.config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+        self.config = AutoConfig.from_pretrained(
+            model_name, trust_remote_code=True
+        )
         self.model_name = model_name
-        
-        if self.config.model_type == "llama" or self.config.model_type == "gemma2":
+
+        if (
+            self.config.model_type == "llama"
+            or self.config.model_type == "gemma2"
+        ):
             self._parse_llama_config()
-            
+
         if self.config.model_type == "opt":
             self._parse_opt_config()
 
-    
     def _parse_opt_config(self):
         self.model_type = self.config.model_type
         self.num_layers = self.config.num_hidden_layers
@@ -32,7 +36,7 @@ class HFUnifiedConfig:
         self.hidden_size = self.config.hidden_size
         self.torch_dtype = self.config.torch_dtype
         self.mlp_size = self.config.ffn_dim
-        
+
     def _parse_llama_config(self):
         self.model_type = self.config.model_type
         self.num_layers = self.config.num_hidden_layers
@@ -41,7 +45,7 @@ class HFUnifiedConfig:
         self.hidden_size = self.config.hidden_size
         self.torch_dtype = self.config.torch_dtype
         self.mlp_size = self.config.intermediate_size
-        
+
     # def _parse_gemma_config(self):
     #     self.model_type = self.config.model_type
     #     self.num_layers = self.config.num_hidden_layers
@@ -50,5 +54,3 @@ class HFUnifiedConfig:
     #     self.hidden_size = self.config.hidden_size
     #     self.torch_dtype = self.config.torch_dtype
     #     self.mlp_size = self.config.intermediate_size
-    
-    

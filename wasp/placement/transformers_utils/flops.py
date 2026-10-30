@@ -1,7 +1,9 @@
 from .config import HFUnifiedConfig
 
 
-def forward_layer_flops(config: HFUnifiedConfig, batch_size: int, seq_length: int) -> float:
+def forward_layer_flops(
+    config: HFUnifiedConfig, batch_size: int, seq_length: int
+) -> float:
     """Approximate per-layer forward FLOPs for transformer training.
 
     Matches the cost model already used in the solver stack:
@@ -32,11 +34,13 @@ def forward_layer_flops(config: HFUnifiedConfig, batch_size: int, seq_length: in
         mlp_flops = 2 * num_tokens * d_model * d_ffn
 
     # Attention score + weighted-value GEMMs.
-    attn_score_flops = 2 * batch_size * d_model * (seq_length ** 2)
+    attn_score_flops = 2 * batch_size * d_model * (seq_length**2)
 
     return float(attn_proj_flops + mlp_flops + attn_score_flops)
 
 
-def backward_layer_flops(config: HFUnifiedConfig, batch_size: int, seq_length: int) -> float:
+def backward_layer_flops(
+    config: HFUnifiedConfig, batch_size: int, seq_length: int
+) -> float:
     """Approximate backward FLOPs as 2x forward FLOPs."""
     return 2.0 * forward_layer_flops(config, batch_size, seq_length)

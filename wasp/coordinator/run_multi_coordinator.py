@@ -10,34 +10,36 @@ import torch.multiprocessing as mp
 
 from morphling.api import add_metrics_arguments
 from wasp.coordinator._multi_coordinator_training import worker_boundary
+
+# Preserve the scaling helpers exposed by this entry point.
 from wasp.scaling.multi_coordinator_scaling_conclusions import (
-    ScalingConclusion,
-    build_scaling_conclusion,
+    ScalingConclusion as ScalingConclusion,
+    build_scaling_conclusion as build_scaling_conclusion,
 )
 from wasp.scaling.multi_coordinator_scaling_config import (
-    OPT_125M_WORKLOAD,
-    TINY_WORKLOAD,
-    RankLaunch,
-    ScalingConfig,
-    WorkloadConfig,
-    build_iteration_plan,
-    build_rank_launch,
-    build_scaling_configs,
-    select_affinity_mode,
+    OPT_125M_WORKLOAD as OPT_125M_WORKLOAD,
+    TINY_WORKLOAD as TINY_WORKLOAD,
+    RankLaunch as RankLaunch,
+    ScalingConfig as ScalingConfig,
+    WorkloadConfig as WorkloadConfig,
+    build_iteration_plan as build_iteration_plan,
+    build_rank_launch as build_rank_launch,
+    build_scaling_configs as build_scaling_configs,
+    select_affinity_mode as select_affinity_mode,
 )
 from wasp.scaling.multi_coordinator_scaling_execution import (
-    ExperimentRun,
-    apply_affinity_mode,
-    build_experiment_plan,
+    ExperimentRun as ExperimentRun,
+    apply_affinity_mode as apply_affinity_mode,
+    build_experiment_plan as build_experiment_plan,
 )
 from wasp.scaling.multi_coordinator_scaling_results import (
-    GlobalResult,
-    LossCorrectness,
-    RankMeasurement,
-    RankResult,
-    build_global_result,
-    build_rank_result,
-    rank_result_payload,
+    GlobalResult as GlobalResult,
+    LossCorrectness as LossCorrectness,
+    RankMeasurement as RankMeasurement,
+    RankResult as RankResult,
+    build_global_result as build_global_result,
+    build_rank_result as build_rank_result,
+    rank_result_payload as rank_result_payload,
 )
 
 

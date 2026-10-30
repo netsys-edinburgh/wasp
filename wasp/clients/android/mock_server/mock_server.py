@@ -8,8 +8,10 @@ import numpy as np
 import morphling_pb2
 import global_api_pb2
 
+
 def current_time_micros():
     return int(time.time() * 1000000)
+
 
 def run_server(host: str, port: int, m: int, k: int, n: int):
     A = np.random.rand(m, k).astype(np.float32)
@@ -26,10 +28,10 @@ def run_server(host: str, port: int, m: int, k: int, n: int):
 
     gemm_req = msg.body.Extensions[global_api_pb2.compute_gemm_request]
     gemm_req.version = 1
-    gemm_req.row = m       
-    gemm_req.col = n       
+    gemm_req.row = m
+    gemm_req.col = n
     gemm_req.pivot = 0
-    gemm_req.h_dim = k     
+    gemm_req.h_dim = k
     gemm_req.dev_id = 0
     gemm_req.oid = 0
     gemm_req.timestamp = current_time_micros()
@@ -56,14 +58,19 @@ def run_server(host: str, port: int, m: int, k: int, n: int):
             print("Connected by", addr)
             while True:
                 input("Press Enter to send the message...")
-                print("Sending message (proto size {} bytes, tensor size {} bytes).".format(len(proto_data), len(tensor_data)))
+                print(
+                    "Sending message (proto size {} bytes, tensor size {} bytes).".format(
+                        len(proto_data), len(tensor_data)
+                    )
+                )
                 conn.sendall(final_message)
                 print("Waiting for response...")
                 response_header = conn.recv(8)
                 response_size = struct.unpack("!I", response_header[:4])[0]
-                response_data = conn.recv(response_size)
-                print("Received response of size {} bytes.".format(response_size))
-                
+                _response_data = conn.recv(response_size)
+                print(
+                    "Received response of size {} bytes.".format(response_size)
+                )
 
 
 if __name__ == "__main__":

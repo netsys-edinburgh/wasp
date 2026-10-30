@@ -25,7 +25,6 @@ def solve_Confident(
     DL_LATENCY: Union[Sequence[float], NDArray[np.float64]],
     UL_LATENCY: Union[Sequence[float], NDArray[np.float64]],
 ) -> float:
-
     model_meta = get_model_dims(model)
     d_model = model_meta["d_model"]
     d_ffn = model_meta["d_ffn"]
@@ -43,7 +42,9 @@ def solve_Confident(
         np.asarray(DL_LATENCY, dtype=np.float64),
     )
 
-    activation_size_gb = compute_activation_size_gb(int(B), int(S), int(d_model))
+    activation_size_gb = compute_activation_size_gb(
+        int(B), int(S), int(d_model)
+    )
 
     layer_flops = compute_layer_flops(int(B), int(S), int(d_model), int(d_ffn))
     stage_prefix = np.zeros((num_stages, num_layers + 1), dtype=np.float64)
@@ -56,7 +57,10 @@ def solve_Confident(
         )
 
     def range_cost(stage_idx: int, start_layer: int, end_layer: int) -> float:
-        return float(stage_prefix[stage_idx, end_layer + 1] - stage_prefix[stage_idx, start_layer])
+        return float(
+            stage_prefix[stage_idx, end_layer + 1]
+            - stage_prefix[stage_idx, start_layer]
+        )
 
     dp = np.full((num_layers, num_stages), np.inf, dtype=np.float64)
     split = np.full((num_layers, num_stages), -1, dtype=np.int64)
@@ -78,7 +82,9 @@ def solve_Confident(
             best_cut = -1
             for cut in range(stage_idx - 1, end):
                 stage_time = range_cost(stage_idx, cut + 1, end)
-                candidate = max(float(dp[cut, stage_idx - 1]), stage_time + comm_s)
+                candidate = max(
+                    float(dp[cut, stage_idx - 1]), stage_time + comm_s
+                )
                 if candidate < best:
                     best = candidate
                     best_cut = cut

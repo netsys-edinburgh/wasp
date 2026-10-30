@@ -33,13 +33,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Lint deps live in requirements-lint.txt (separated from
-          # requirements.txt so the main install doesn't drag in formatting
-          # toolchains). pip install .[dev] caused out-of-space errors with
-          # torch 2.1.0+, so we install lint deps directly.
-          pip install -r requirements-lint.txt
+          # Install only lint tools; the project dependencies include
+          # the Morphling training runtime and are not needed for formatting.
+          python -m pip install -r requirements-lint.txt
 
       - name: Formatting checks
         run: |
-          pip show pre-commit clang-format
+          python -m pip show pre-commit
           pre-commit run --all-files
