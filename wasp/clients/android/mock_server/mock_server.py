@@ -67,7 +67,7 @@ def run_server(host: str, port: int, m: int, k: int, n: int):
                 print("Waiting for response...")
                 response_header = conn.recv(8)
                 response_size = struct.unpack("!I", response_header[:4])[0]
-                response_data = conn.recv(response_size)
+                _response_data = conn.recv(response_size)
                 print(
                     "Received response of size {} bytes.".format(response_size)
                 )

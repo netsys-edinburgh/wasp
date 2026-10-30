@@ -18,7 +18,7 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 
-from wasp.placement.constants import KB, MB, GB, TB, BYTE_SIZE
+from wasp.placement.constants import GB, BYTE_SIZE
 
 
 def compute_layer_flops(B: int, S: int, d_model: int, d_ffn: int) -> float:

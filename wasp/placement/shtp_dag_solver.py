@@ -4,9 +4,14 @@ import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
 
-from wasp.placement.constants import *
-from wasp.placement.arguments import *
+from wasp.placement.constants import BYTE_SIZE, M, MB, TB
+from wasp.placement.arguments import (
+    get_batch_gemm_sizes,
+    get_gemm_shapes,
+    parse_args,
+)
 
 
 args = parse_args()
@@ -55,7 +60,7 @@ def solve_SHTP(
     max_in_dim = max(in_dim)
     max_out_dim = max(out_dim)
 
-    # here num_tasks is the number of matrices that need to be multipled.
+    # here num_tasks is the number of matrices that need to be multiplied.
     # A task is a matrix that needs to me multiploed
     beta = m.addMVar(
         (num_tasks, num_devices),
@@ -129,7 +134,7 @@ def solve_SHTP(
             m.addConstr(
                 tp_cost[i]
                 >= temp_pred_tp_cost[i] + comm_max[i][j] * multipliers[i],
-                name=f"max_tp_cost",
+                name="max_tp_cost",
             )
 
     product_sum = [0] * num_tasks
@@ -410,8 +415,6 @@ def gen_topology():
 
 
 g = gen_topology()
-
-import matplotlib.pyplot as plt
 
 nx.draw(g, pos=nx.shell_layout(g), with_labels=True)
 plt.savefig("debug.png")

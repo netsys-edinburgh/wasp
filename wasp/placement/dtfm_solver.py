@@ -1,18 +1,18 @@
-import os
 import heuristic_evolutionary_solver
 from heuristic_evolutionary_solver.scheduler import (
     GCMA,
     compute_data_parallel_cost,
     compute_pipeline_parallel_cost,
-    get_pipelines,
     # compute_data_parallel_cost_ring,
 )
 
 import time
 import numpy as np
-from wasp.placement.transformers_utils import *
-from wasp.placement.constants import *
-from wasp.placement.plot_utils import plot_heatmap
+from wasp.placement.transformers_utils import (
+    HFUnifiedConfig,
+    static_layer_memory_usage,
+)
+from wasp.placement.constants import BYTE_SIZE, GB, TB, get_divisors
 from wasp.placement.arguments import parse_args
 from wasp.placement.model_utils import parse_model_meta
 
@@ -47,7 +47,8 @@ def solve_DTFM(
     while True:
         try:
             way = num_devices // partition_size
-            dp_table = np.full(shape=(way, pow(2, way)), fill_value=np.inf)
+            # Keep the allocation: MemoryError determines the partition size.
+            _dp_table = np.full(shape=(way, pow(2, way)), fill_value=np.inf)
             break
         except MemoryError:
             p_idx += 1
@@ -75,7 +76,7 @@ def solve_DTFM(
         (NUM_TOKENS * d_model * BYTE_SIZE) / GB / partition_size  # way
     )
     heuristic_evolutionary_solver.scheduler.send_gradient_size = (
-        send_gradient_size
+        _send_gradient_size
     ) = (
         layer_size
         * n_layer
@@ -103,7 +104,7 @@ def solve_DTFM(
 
     simulate_cases = [(7, simulate_7_edge_distributed)]
 
-    repetition = 0
+    _repetition = 0
     for _, (case_idx, simulate_case) in enumerate(simulate_cases):
         peer_delay, peer_bandwidth, regions = simulate_case(num_devices)
 

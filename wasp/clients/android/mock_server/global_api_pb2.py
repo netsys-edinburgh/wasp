@@ -18,7 +18,9 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
-import morphling_pb2 as morphling__pb2
+# Keep the generated import after runtime validation: it registers the
+# dependency descriptor before global_api.proto is added to the pool.
+import morphling_pb2 as morphling__pb2  # noqa: E402, F401
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(

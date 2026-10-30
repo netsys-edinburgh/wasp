@@ -9,7 +9,6 @@ import time
 import traceback
 from datetime import timedelta
 from pathlib import Path
-from typing import Final
 
 import torch.distributed as dist
 

@@ -1,5 +1,8 @@
-from wasp.placement.transformers_utils import *
-from wasp.placement.constants import *
+from wasp.placement.transformers_utils import (
+    HFUnifiedConfig,
+    static_layer_memory_usage,
+)
+from wasp.placement.constants import BYTE_SIZE, MB, TB
 import numpy as np
 from wasp.placement.arguments import parse_args
 from wasp.placement.model_utils import parse_model_meta
@@ -55,7 +58,7 @@ def solve_Alpa_DAG(
         print(f"{num_dp=} {num_way=}")
 
         input_size = NUM_TOKENS * hidden_size * BYTE_SIZE / MB / num_dp
-        dl_bw = (DL_BW.reshape((num_dp, num_way)) * 1000).copy()
+        _dl_bw = (DL_BW.reshape((num_dp, num_way)) * 1000).copy()
         ul_bw = (UL_BW.reshape((num_dp, num_way)) * 1000).copy()
 
         tp_cost = np.zeros(num_dp)

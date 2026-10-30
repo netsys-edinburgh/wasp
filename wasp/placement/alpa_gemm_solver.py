@@ -1,10 +1,6 @@
-import re
-import time
-import gurobipy as gp
-from gurobipy import GRB
 import numpy as np
 
-from wasp.placement.constants import *
+from wasp.placement.constants import MB, TB
 from wasp.placement.arguments import parse_args
 
 
@@ -38,8 +34,8 @@ def solve_Alpa(
     ul_latency,
     cache_input=False,
 ):
-    input_matrix_size = in_dim * h_dim
-    weight_matrix_size = h_dim * out_dim
+    _input_matrix_size = in_dim * h_dim
+    _weight_matrix_size = h_dim * out_dim
 
     def device_lat(M, N):
         dl_lat = (M * h_dim + N * h_dim) * args.byte_size / MB / args.dl_bw

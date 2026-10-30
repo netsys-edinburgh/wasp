@@ -31,7 +31,7 @@ LABELS = {
 def derive_layout(manifest: dict[str, Any]) -> dict[str, Any]:
     ents = manifest.get("entries", [])
     meta = manifest.get("metadata", {})
-    nd = int(meta.get("num_devices", 0)) or len(
+    num_devices = int(meta.get("num_devices", 0)) or len(
         {
             int(e.get("device_id", -1))
             for e in ents
@@ -42,12 +42,12 @@ def derive_layout(manifest: dict[str, Any]) -> dict[str, Any]:
 
     if "cleave_tp" in ptypes:
         return {
-            "num_devices": nd,
+            "num_devices": num_devices,
             "granularity": "sub-GEMM shard",
             "dp": 1,
             "pp": 1,
-            "tp": nd,
-            "summary": f"selective sub-GEMM TP across {nd}",
+            "tp": num_devices,
+            "summary": f"selective sub-GEMM TP across {num_devices}",
         }
 
     stages = sorted({int(e.get("stage_id", -1)) for e in ents})
@@ -57,7 +57,9 @@ def derive_layout(manifest: dict[str, Any]) -> dict[str, Any]:
         dev_per_stage.setdefault(int(e.get("stage_id", -1)), set()).add(
             int(e.get("device_id", -1))
         )
-    per_stage = max((len(v) for v in dev_per_stage.values()), default=nd)
+    per_stage = max(
+        (len(v) for v in dev_per_stage.values()), default=num_devices
+    )
 
     has_dp = any("dp_allreduce" in p for p in ptypes)
     has_tp = any("tp_allreduce" in p for p in ptypes)
@@ -78,7 +80,7 @@ def derive_layout(manifest: dict[str, Any]) -> dict[str, Any]:
         parts.append(f"TP{tp}")
     summary = " x ".join(parts) if parts else "PP1"
     return {
-        "num_devices": nd,
+        "num_devices": num_devices,
         "granularity": "pipeline/layer",
         "dp": dp,
         "pp": pp,

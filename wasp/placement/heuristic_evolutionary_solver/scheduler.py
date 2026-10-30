@@ -45,8 +45,8 @@ def timeit(method):
     def timed(*args, **kw):
         ts = time.time()
         result = method(*args, **kw)
-        te = time.time()
-        print("function", method.__name__, "took", te - ts, "seconds")
+        end_time = time.time()
+        print("function", method.__name__, "took", end_time - ts, "seconds")
         return result
 
     return timed
@@ -346,7 +346,7 @@ def GCMA(nodes=None, population_size=None, trails=None, mode=None):
             G_ij = np.full(shape=(way, way), fill_value=-np.inf)
             for partition_idx, trace in enumerate(G_i_trace):
                 v_idx = trace[0]
-                if v_idx != None:
+                if v_idx is not None:
                     for target_partition_idx, target_gain in enumerate(
                         gain[v_idx]
                     ):
@@ -442,7 +442,7 @@ def GCMA(nodes=None, population_size=None, trails=None, mode=None):
                 S0 = Si = np.argmax(G_i)
                 for _ in range(num_devices):  # how many movement per cycle
                     v_idx, Pv = G_i_trace[Si]
-                    if v_idx == None:
+                    if v_idx is None:
                         v_idx = movements[-1][0]
                         Pv = S0
                     cur_offspring[v_idx] = Pv
@@ -464,15 +464,15 @@ def GCMA(nodes=None, population_size=None, trails=None, mode=None):
                         )
 
                 max_sum = 0
-                l = 0
+                best_cycle_end = 0
                 for i in range(1, len(epsilon)):
                     if np.sum(epsilon[:i]) + tau[i] > max_sum:
                         max_sum = np.sum(epsilon[:i]) + tau[i]
-                        l = i
+                        best_cycle_end = i
 
-                for i in range(len(epsilon) - 1, l, -1):
+                for i in range(len(epsilon) - 1, best_cycle_end, -1):
                     cur_offspring[movements[i][0]] = movements[i][1]
-                cur_offspring[movements[l][0]] = S0
+                cur_offspring[movements[best_cycle_end][0]] = S0
                 offsprings.append(cur_offspring)
                 sum.append(max_sum)
 
@@ -690,7 +690,7 @@ if __name__ == "__main__":
                     )
             assert np.sum(ip_rank_map) == np.sum(range(num_devices))
 
-            if regions != None:
+            if regions is not None:
                 for pipeline_idx in range(partition_size):
                     print("pipeline " + str(pipeline_idx) + ": ", end="")
                     for stage_idx in range(way):

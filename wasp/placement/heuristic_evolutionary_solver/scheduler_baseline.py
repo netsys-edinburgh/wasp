@@ -85,7 +85,7 @@ if __name__ == "__main__":
                     )
             assert np.sum(ip_rank_map) == np.sum(range(scheduler.num_devices))
 
-            if scheduler.regions != None:
+            if scheduler.regions is not None:
                 for pipeline_idx in range(scheduler.partition_size):
                     print("pipeline " + str(pipeline_idx) + ": ", end="")
                     for stage_idx in range(scheduler.way):

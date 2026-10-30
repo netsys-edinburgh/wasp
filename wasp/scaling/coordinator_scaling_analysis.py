@@ -16,7 +16,7 @@ from wasp.scaling.multi_coordinator_scaling_analysis import (
     BreakdownReconciliationError,
     PhaseBreakdown,
     reconcile_breakdown,
-    response_counters_are_balanced,
+    response_counters_are_balanced as response_counters_are_balanced,
     scaling_efficiency,
 )
 
