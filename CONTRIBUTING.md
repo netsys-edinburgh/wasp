@@ -6,7 +6,7 @@ welcome bug reports, features, docs, and code.
 ## Development environment
 
 ```bash
-pip install pre-commit
+python -m pip install -r requirements-lint.txt
 pre-commit install --install-hooks
 ```
 
